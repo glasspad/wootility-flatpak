@@ -9,29 +9,37 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Install Flatpak
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install npm dependencies
+        run: npm install
+
+      - name: tools
         run: |
           sudo apt update
           sudo apt install -y flatpak flatpak-builder
 
-      - name: Add Flathub
+      - name: Add Flathub (user mode)
         run: |
-          flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+          flatpak --user remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 
-      - name: Install runtime
+      - name: install 
         run: |
-          flatpak install -y flathub org.freedesktop.Platform//23.08 org.freedesktop.Sdk//23.08
+          flatpak --user install -y flathub org.freedesktop.Platform//23.08 org.freedesktop.Sdk//23.08
 
-      - name: Build Flatpak
+      - name: build user mode 
         run: |
-          flatpak-builder build-dir com.example.Wootility.json --force-clean
+          flatpak-builder --user build-dir com.example.Wootility.json --force-clean
 
-      - name: Export bundle
+      - name: export bundle
         run: |
-          flatpak-builder --repo=repo build-dir com.example.Wootility.json
+          flatpak-builder --user --repo=repo build-dir com.example.Wootility.json
           flatpak build-bundle repo wootility.flatpak com.example.Wootility
 
       - name: Upload artifact
